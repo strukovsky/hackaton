@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% load static %}
+<script src="{% static 'main/codemirror/lib/codemirror.js' %}"></script>
+<script src="{% static 'main/codemirror/mode/javascript/javascript.js' %}"></script>
+<link rel="stylesheet" href="{% static 'main/codemirror/lib/codemirror.css' %}">
+<ul>
+    {% if algorithms %}
+        {% for algorithm in algorithms %}
+            <li>
+                <a href="/algorithm/{{ algorithm.id }}/">{{ algorithm.name }}</a>
+            </li>
+        {% endfor %}
+    {% endif %}
+</ul>
+<form method="post" >
+    {% csrf_token %}
+    {{form}}
+    <input type="submit" value="Save!" />
+</form>
+
+{%  if out %}
+    <pre>{{ out }}</pre>
+{% endif %}
+
+{% if user %}
+    <a href="/logout/">Logout</a>
+{% endif %}
+
+</body>
+<script>
+   {% comment %} let textarea = document.querySelector("div > textarea:last-child");
+    var editor = CodeMirror.fromTextArea(textarea, {
+    lineNumbers: true
+  });
+    document.getElementById("submit").onclick = {
+        
+    };{% endcomment %}
+</script>
+</html>
