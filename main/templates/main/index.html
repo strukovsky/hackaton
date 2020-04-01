@@ -2,16 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>Welcome</title>
+
+    {% load static %}
+    <script src="{% static 'main/js/jquery-3.4.1.min.js' %}"></script>
+    <script src="{% static 'main/js/bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'main/js/bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'main/js/bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
 </head>
 <body>
 <!---  -->
-<h1>Log in or Sign up</h1>
-<form method="post">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" value="Go!"/>
-</form>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="navbar-brand">Trade Algorithms</div>
+</nav>
+<main>
+   <div class="jumbotron" style="display: flex">
+    <div style="margin: auto">
+        <h1 class="modal-title">Log in or Sign up</h1>
+        <form method="post" class="form-group">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Go!" class="btn-primary"/>
+        </form>
+    </div>
+</div>
+</main>
+
 
 </body>
 </html>

@@ -7,7 +7,7 @@ from django.shortcuts import render
 # Create your views here.
 
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render
 from .forms import SignupForm, AlgorithmForm
 
@@ -29,6 +29,7 @@ def index(request):
                     return HttpResponse("<h1>Failed to authenticate!</h1>")
                 else:
                     request.session["user_id"] = user.id
+                    request.session["username"] = username
                     return HttpResponseRedirect('/editor/')
             except User.DoesNotExist:
                 print('Attempt to add new user')
@@ -39,15 +40,16 @@ def index(request):
                     return HttpResponse("<h1>Failed to authenticate!</h1>")
                 else:
                     request.session["user_id"] = user.id
+                    request.session["username"] = username
                     return HttpResponseRedirect('/editor/')
-
-
     else:
         form = SignupForm()
     return render(request, 'main/index.html', {'form': form})
 
 
 def algorithm(request, current):
+    if request.session.get("user_id") is None:
+        return HttpResponseForbidden()
     form = AlgorithmForm()
     out = ""
     if request.method == 'POST':
@@ -66,19 +68,28 @@ def algorithm(request, current):
         current = Algorithm.objects.get(id=current)
         form = AlgorithmForm(data={"name": current.name, "code": current.code})
         out = execute(current.code, current.name)
+        username = request.session.get("username")
         context = {
             "user": request.session.get("user_id"),
             "algorithms": Algorithm.objects.filter(owner=request.session.get("user_id")),
             "current": current,
             "form": form,
+            "username": username,
             "out": out
         }
     except Algorithm.DoesNotExist:
-        context = {"form": form, "user": request.session.get("user_id"), "out": out}
+        context = {"form": form,
+                   "user": request.session.get("user_id"),
+                   "out": out,
+                   "username": request.session.get("username")
+                   }
     return render(request, 'main/editor.html', context)
 
 
 def editor(request):
+    if request.session.get("user_id") is None:
+        return HttpResponseForbidden()
+
     if request.method == 'POST':
         form = AlgorithmForm(request.POST)
         if form.is_valid():
@@ -90,10 +101,13 @@ def editor(request):
             return HttpResponseRedirect('/algorithm/' + str(algo.id))
     try:
         owner = request.session.get("user_id")
+        username = request.session.get("username")
+        algorithms = Algorithm.objects.filter(owner=owner)
         context = {
-            "user": request.session.get("user_id"),
+            "user": owner,
             "form": AlgorithmForm(),
-            "algorithms": Algorithm.objects.filter(owner=owner),
+            "username": username,
+            "algorithms": algorithms,
         }
 
     except Algorithm.DoesNotExist:
@@ -129,7 +143,7 @@ def compl(filenameCompile, code):
 
 def exect(filenameExec):
     try:
-        cmd = 'java ' + filenameExec
+        cmd = 'cd ' + executing_path + ';' + 'java ' + filenameExec
         outExec = process(cmd)
         return outExec
     except Exception as e:
@@ -148,15 +162,17 @@ def execute(code, name):
     filenameExec = executing_path + '/' + name
 
     c = compl(filenameCompile, code)
-    e = exect(filenameExec)
+    e = exect(name)
 
-    clear(filenameExec)
+    clear(filenameExec + ".class")
     clear(filenameCompile)
 
     output = c + e
     result = []
     for item in output:
-        result.append(str(item))
+        if len(item) > 0:
+            s = str(item)
+            result.append(s[2:len(s)-1].replace("\\n", "\n"))
     return "\n".join(result)
 
 

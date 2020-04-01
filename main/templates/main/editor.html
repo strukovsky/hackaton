@@ -2,44 +2,95 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Editor</title>
+
+    {% load static %}
+    <script src="{% static 'main/js/jquery-3.4.1.min.js' %}"></script>
+    {% comment %}
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.4.1.js"></script>
+{% endcomment %}
+
+
+    <script src="{% static 'main/js/bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'main/js/bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'main/js/bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
+
 </head>
 <body>
-{% load static %}
-<script src="{% static 'main/codemirror/lib/codemirror.js' %}"></script>
-<script src="{% static 'main/codemirror/mode/javascript/javascript.js' %}"></script>
-<link rel="stylesheet" href="{% static 'main/codemirror/lib/codemirror.css' %}">
-<ul>
-    {% if algorithms %}
-        {% for algorithm in algorithms %}
+<nav class="navbar navbar-dark bg-dark">
+    <div class="navbar-brand">Trade Algorithms</div>
+    <ul class="navbar-nav mr-auto">
+        <li>
+            <a href="/editor/" class="nav-link">New algorithm</a>
+        </li>
+
+        {% if algorithms %}
             <li>
-                <a href="/algorithm/{{ algorithm.id }}/">{{ algorithm.name }}</a>
+                <button type="button" class="nav-item btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                    Your algorithms
+                </button>
             </li>
-        {% endfor %}
+        {% endif %}
+    </ul>
+
+
+    {% if user %}
+        <a href="/logout/" class="btn btn-danger">Hello, {{ username }}. Logout</a>
     {% endif %}
-</ul>
-<form method="post" >
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" value="Save!" />
-</form>
 
-{%  if out %}
-    <pre>{{ out }}</pre>
-{% endif %}
+</nav>
+<main>
+    <div class="jumbotron">
+        <form method="post" class="form-group">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" class="btn btn-primary" value="Save!"/>
+        </form>
+    </div>
 
-{% if user %}
-    <a href="/logout/">Logout</a>
-{% endif %}
+
+
+    {% if out %}
+        <h3 class="modal-title">Output:</h3>
+        <textarea class="form-control" readonly>{{ out }}</textarea>
+    {% endif %}
+
+
+
+    <!-- Modal -->
+    {% if algorithms %}
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Your algorithms</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group">
+                            {% for algorithm in algorithms %}
+                                <li class="list-group-item"><a class="dropdown-item"
+                                                               href="/algorithm/{{ algorithm.id }}/">{{ algorithm.name }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</main>
+
 
 </body>
-<script>
-   {% comment %} let textarea = document.querySelector("div > textarea:last-child");
-    var editor = CodeMirror.fromTextArea(textarea, {
-    lineNumbers: true
-  });
-    document.getElementById("submit").onclick = {
-        
-    };{% endcomment %}
-</script>
 </html>
+
+
+
